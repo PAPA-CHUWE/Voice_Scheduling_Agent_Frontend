@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { formatDateTime } from "@/lib/formatDate";
 import { apiEvents } from "@/lib/api/client";
 import { DataTable, type Column } from "@/components/DataTable";
 import type { Event } from "@/lib/api/types";
@@ -26,12 +26,12 @@ export default function EventsPage() {
     {
       key: "start",
       header: "Start",
-      render: (r) => (r.start ? format(new Date(r.start), "PPp") : "—"),
+      render: (r) => (r.start ? formatDateTime(r.start) : "—"),
     },
     {
       key: "end",
       header: "End",
-      render: (r) => (r.end ? format(new Date(r.end), "PPp") : "—"),
+      render: (r) => (r.end ? formatDateTime(r.end) : "—"),
     },
     { key: "calendar", header: "Calendar", render: (r) => r.calendarId ?? "—" },
     {

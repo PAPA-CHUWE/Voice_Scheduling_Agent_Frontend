@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
+import { formatDateTime } from "@/lib/formatDate";
 import { ArrowLeft, ExternalLink, Copy } from "lucide-react";
 import { apiEvents } from "@/lib/api/client";
 import type { Event } from "@/lib/api/types";
@@ -97,11 +97,11 @@ export default function EventDetailPage() {
           <dt className="text-muted-foreground">Start</dt>
           <dd>
             {event.start
-              ? format(new Date(event.start), "PPpp") + (event.timezone ? ` (${event.timezone})` : "")
+              ? formatDateTime(event.start) + (event.timezone ? ` (${event.timezone})` : "")
               : "—"}
           </dd>
           <dt className="text-muted-foreground">End</dt>
-          <dd>{event.end ? format(new Date(event.end), "PPpp") : "—"}</dd>
+          <dd>{event.end ? formatDateTime(event.end) : "—"}</dd>
           <dt className="text-muted-foreground">Google Event ID</dt>
           <dd className="font-mono text-xs">{event.googleEventId ?? "—"}</dd>
           <dt className="text-muted-foreground">Calendar ID</dt>

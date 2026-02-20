@@ -38,6 +38,8 @@ Open [http://localhost:3000](http://localhost:3000). You will be redirected to `
 - `npm run build` – production build
 - `npm run start` – run production server
 - `npm run typecheck` – run TypeScript check
+
+Date/time display uses the browser’s native `Intl` API (see `lib/formatDate.ts`); no date-fns dependency.
 - `npm run lint` – run ESLint
 
 ## Getting Started (dev)

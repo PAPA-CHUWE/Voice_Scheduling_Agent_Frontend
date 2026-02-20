@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { format } from "date-fns";
+import { formatDateTime } from "@/lib/formatDate";
 import { Plus, Calendar, CalendarDays } from "lucide-react";
 import { apiSessions, apiEvents } from "@/lib/api/client";
 import { StatCard } from "@/components/StatCard";
@@ -63,7 +63,7 @@ export default function DashboardPage() {
     {
       key: "start",
       header: "Start",
-      render: (r) => (r.start ? format(new Date(r.start), "PPp") : "—"),
+      render: (r) => (r.start ? formatDateTime(r.start) : "—"),
     },
   ];
 

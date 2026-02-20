@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
+import { formatDateTime, formatDateOnly } from "@/lib/formatDate";
 import { ArrowLeft, Plus } from "lucide-react";
 import { apiSessions, apiEvents } from "@/lib/api/client";
 import { SessionForm } from "@/components/SessionForm";
@@ -98,7 +98,7 @@ export default function SessionDetailPage() {
           <dt className="text-muted-foreground">Proposed start</dt>
           <dd>
             {session.proposedStart
-              ? format(new Date(session.proposedStart), "PPpp")
+              ? formatDateTime(session.proposedStart)
               : "—"}
           </dd>
           <dt className="text-muted-foreground">Duration (min)</dt>
@@ -106,7 +106,7 @@ export default function SessionDetailPage() {
           <dt className="text-muted-foreground">Created</dt>
           <dd>
             {session.createdAt
-              ? format(new Date(session.createdAt), "PPpp")
+              ? formatDateTime(session.createdAt)
               : "—"}
           </dd>
         </dl>

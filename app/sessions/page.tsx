@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { formatDateTime, formatDateOnly } from "@/lib/formatDate";
 import { apiSessions } from "@/lib/api/client";
 import { DataTable, type Column } from "@/components/DataTable";
 import type { Session } from "@/lib/api/types";
@@ -23,13 +23,13 @@ export default function SessionsPage() {
       key: "proposedStart",
       header: "Proposed start",
       render: (r) =>
-        r.proposedStart ? format(new Date(r.proposedStart), "PPp") : "—",
+        r.proposedStart ? formatDateTime(r.proposedStart) : "—",
     },
     { key: "duration", header: "Duration", render: (r) => `${r.durationMinutes ?? "—"} min` },
     {
       key: "created",
       header: "Created",
-      render: (r) => (r.createdAt ? format(new Date(r.createdAt), "PP") : "—"),
+      render: (r) => (r.createdAt ? formatDateOnly(r.createdAt) : "—"),
     },
     {
       key: "link",
