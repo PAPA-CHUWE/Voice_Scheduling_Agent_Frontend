@@ -94,7 +94,7 @@ export function EventForm({
       const offsets: number[] = Array.isArray(rawOffsets)
         ? rawOffsets
         : typeof rawOffsets === "string"
-          ? rawOffsets.split(",").map((n: string) => parseInt(n.trim(), 10)).filter(Boolean)
+          ? (rawOffsets as string).split(",").map((n: string) => parseInt(n.trim(), 10)).filter(Boolean)
           : [60, 10];
 
       let sessionId = data.sessionId?.trim() || undefined;
