@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const backendUrl = `${process.env.NEXT_PUBLIC_API_BASE || "https://voice-scheduling-gent.onrender.com/api/v1"}/sessions`;
+  console.log("body", body);
   console.log("[create sessions] POST", backendUrl, "body:", JSON.stringify(body, null, 2));
   const res = await proxyToBackend("sessions", {
     method: "POST",

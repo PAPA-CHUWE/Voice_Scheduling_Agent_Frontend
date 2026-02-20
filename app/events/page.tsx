@@ -16,13 +16,15 @@ export default function EventsPage() {
     queryFn: () => apiSessions.list({ limit: 100 }),
   });
   const sessionsPayload = sessionsResponse?.data as { sessions?: Session[] } | Session[] | undefined;
-  const sessionsList: Session[] = Array.isArray(sessionsPayload)
-    ? sessionsPayload
-    : Array.isArray(sessionsPayload?.sessions)
-      ? sessionsPayload.sessions
-      : [];
+  const sessionsList: Session[] = sessionsPayload == null
+    ? []
+    : Array.isArray(sessionsPayload)
+      ? sessionsPayload
+      : Array.isArray(sessionsPayload?.sessions)
+        ? sessionsPayload.sessions ?? []
+        : [];
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["events", sessionFilter || "all"],
     queryFn: () =>
       apiEvents.list({
@@ -32,12 +34,14 @@ export default function EventsPage() {
   });
 
   // Backend returns { success, data: { events: [...], pagination } }
-  const raw = data?.data;
-  const rows = Array.isArray(raw)
-    ? (raw as Event[])
-    : Array.isArray((raw as unknown as { events?: Event[] })?.events)
-      ? ((raw as unknown as { events: Event[] }).events)
-      : [];
+  const raw = data?.data as { events?: Event[] } | Event[] | undefined;
+  const rows = raw == null
+    ? []
+    : Array.isArray(raw)
+      ? (raw as Event[])
+      : Array.isArray(raw?.events)
+        ? raw.events ?? []
+        : [];
 
   const columns: Column<Event>[] = [
     {
@@ -82,6 +86,11 @@ export default function EventsPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Events</h1>
+        {error && (
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive">
+            Failed to load events: {error instanceof Error ? error.message : String(error)}
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <label htmlFor="session-filter" className="text-sm font-medium text-muted-foreground">
             Filter by session:

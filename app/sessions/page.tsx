@@ -7,18 +7,20 @@ import { DataTable, type Column } from "@/components/DataTable";
 import type { Session } from "@/lib/api/types";
 
 export default function SessionsPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["sessions"],
     queryFn: () => apiSessions.list({ limit: 50 }),
   });
 
   // Backend returns { success, data: { sessions: [...], pagination } }
-  const raw = data?.data;
-  const rows = Array.isArray(raw)
-    ? (raw as Session[])
-    : Array.isArray((raw as { sessions?: Session[] })?.sessions)
-      ? ((raw as { sessions: Session[] }).sessions)
-      : [];
+  const raw = data?.data as { sessions?: Session[] } | Session[] | undefined;
+  const rows = raw == null
+    ? []
+    : Array.isArray(raw)
+      ? (raw as Session[])
+      : Array.isArray(raw?.sessions)
+        ? raw.sessions
+        : [];
 
   const columns: Column<Session>[] = [
     { key: "status", header: "Status", render: (r) => r.status },
@@ -47,6 +49,11 @@ export default function SessionsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Sessions</h1>
+      {error && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive">
+          Failed to load sessions: {error instanceof Error ? error.message : String(error)}
+        </div>
+      )}
       <DataTable
         columns={columns}
         rows={rows}
