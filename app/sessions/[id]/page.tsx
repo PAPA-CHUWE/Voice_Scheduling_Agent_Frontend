@@ -5,9 +5,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDateTime } from "@/lib/formatDate";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { apiSessions, apiEvents } from "@/lib/api/client";
 import { EventForm } from "@/components/EventForm";
+import { useToast } from "@/lib/ui/toast";
 import type { Session as SessionType } from "@/lib/api/types";
 import type { EventCreateInput } from "@/lib/api/schemas";
 
@@ -16,6 +17,7 @@ export default function SessionDetailPage() {
   const router = useRouter();
   const id = params.id as string;
   const queryClient = useQueryClient();
+  const { addToast } = useToast();
   const [eventModal, setEventModal] = useState(false);
 
   const { data, isLoading, error } = useQuery({
@@ -29,6 +31,19 @@ export default function SessionDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setEventModal(false);
+    },
+  });
+
+  const deleteSession = useMutation({
+    mutationFn: () => apiSessions.delete(id),
+    onSuccess: () => {
+      addToast("Session deleted", "success");
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      router.push("/sessions");
+    },
+    onError: (e) => {
+      addToast(e instanceof Error ? e.message : "Failed to delete session", "error");
     },
   });
 
@@ -108,7 +123,7 @@ export default function SessionDetailPage() {
               : "—"}
           </dd>
         </dl>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setEventModal(true)}
@@ -116,6 +131,19 @@ export default function SessionDetailPage() {
           >
             <Plus className="h-4 w-4" />
             Create event from session
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("Delete this session? This cannot be undone.")) {
+                deleteSession.mutate();
+              }
+            }}
+            disabled={deleteSession.isPending}
+            className="flex items-center gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete session
           </button>
         </div>
       </div>
@@ -127,8 +155,13 @@ export default function SessionDetailPage() {
             <EventForm
               defaultValues={defaultEventValues}
               onSubmit={async (data) => {
-                await eventCreate.mutateAsync(data);
-                router.push("/events");
+                const result = await eventCreate.mutateAsync(data);
+                const eventId = (result as { data?: { eventId?: string } })?.data?.eventId;
+                if (eventId) {
+                  router.push(`/events/${eventId}`);
+                } else {
+                  router.push("/events");
+                }
               }}
               onCancel={() => setEventModal(false)}
               isLoading={eventCreate.isPending}

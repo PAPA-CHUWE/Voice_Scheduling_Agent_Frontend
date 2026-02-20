@@ -51,7 +51,7 @@ async function request<T>(
   return data as T;
 }
 
-// Auth
+// Auth (Next route forwards to backend with API key; sets httpOnly cookie)
 export const apiAuth = {
   login: (email: string) =>
     request<{ token?: string; user?: { email: string } }>("/api/auth/login", {
@@ -86,6 +86,10 @@ export const apiSessions = {
       method: "PATCH",
       body,
     }),
+  delete: (id: string) =>
+    request<{ data?: unknown; success?: boolean }>(`/api/proxy/sessions/${id}`, {
+      method: "DELETE",
+    }),
 };
 
 // Events
@@ -119,6 +123,10 @@ export const apiEvents = {
   get: (id: string) =>
     request<{ data?: unknown; success?: boolean }>(`/api/proxy/events/${id}`, {
       cache: "no-store",
+    }),
+  delete: (id: string) =>
+    request<{ data?: unknown; success?: boolean }>(`/api/proxy/events/${id}`, {
+      method: "DELETE",
     }),
   create: (
     body: Record<string, unknown>,

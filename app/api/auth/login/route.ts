@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-  const apiKey = process.env.BACKEND_API_KEY;
+  const apiKey = "1adefe9b094fe5bc0d6e0a297e4186addfdd15960df2e5dfc63debab133b57ee";
   if (apiKey) headers["x-api-key"] = apiKey;
 
   const res = await fetch(`${BASE.replace(/\/$/, "")}/auth/login`, {

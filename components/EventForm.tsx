@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   eventCreateFormSchema,
   type EventCreateFormInput,
@@ -46,6 +46,7 @@ export function EventForm({
     }
   }
 
+  const queryClient = useQueryClient();
   const { data: sessionsResponse } = useQuery({
     queryKey: ["sessions"],
     queryFn: () => apiSessions.list({ limit: 100 }),
@@ -114,6 +115,7 @@ export function EventForm({
           addToast("Created session but could not get session ID", "error");
           return;
         }
+        queryClient.invalidateQueries({ queryKey: ["sessions"] });
       }
 
       const payload: EventCreateInput = {

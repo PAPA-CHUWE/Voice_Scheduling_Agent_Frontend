@@ -35,8 +35,8 @@ export default function EventsPage() {
   const raw = data?.data;
   const rows = Array.isArray(raw)
     ? (raw as Event[])
-    : Array.isArray((raw as { events?: Event[] })?.events)
-      ? ((raw as { events: Event[] }).events)
+    : Array.isArray((raw as unknown as { events?: Event[] })?.events)
+      ? ((raw as unknown as { events: Event[] }).events)
       : [];
 
   const columns: Column<Event>[] = [

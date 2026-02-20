@@ -1,26 +1,43 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDateTime } from "@/lib/formatDate";
-import { ArrowLeft, ExternalLink, Copy } from "lucide-react";
+import { ArrowLeft, ExternalLink, Copy, Trash2 } from "lucide-react";
 import { apiEvents } from "@/lib/api/client";
 import type { Event } from "@/lib/api/types";
 import { useToast } from "@/lib/ui/toast";
 
 export default function EventDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const id = params.id as string;
   const { addToast } = useToast();
+
+  const deleteEvent = useMutation({
+    mutationFn: () => apiEvents.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      addToast("Event deleted", "success");
+      router.push("/events");
+    },
+    onError: (e) => {
+      addToast(e instanceof Error ? e.message : "Failed to delete event", "error");
+    },
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["event", id],
     queryFn: () => apiEvents.get(id),
   });
 
-  const raw = data?.data ?? data;
-  const event = raw as Event | undefined;
+  // Backend may return { data: event } or { data: { event: event } }; event may have _id or eventId
+  const raw = data?.data;
+  const eventRaw = (raw as { event?: Event })?.event ?? raw;
+  const event = eventRaw as (Event & { eventId?: string }) | undefined;
+  const eventIdDisplay = event?._id ?? (event as { eventId?: string })?.eventId ?? id;
 
   function copyCurl() {
     if (!event) return;
@@ -64,6 +81,8 @@ export default function EventDetailPage() {
   }
 
   const ns = event.notificationStatus;
+  const startIso = event.start ?? (event as { startIso?: string }).startIso;
+  const endIso = event.end ?? (event as { endIso?: string }).endIso;
 
   return (
     <div className="space-y-6">
@@ -84,6 +103,19 @@ export default function EventDetailPage() {
             <Copy className="h-4 w-4" />
             Copy curl
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("Delete this event? This cannot be undone.")) {
+                deleteEvent.mutate();
+              }
+            }}
+            disabled={deleteEvent.isPending}
+            className="flex items-center gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-2 py-1.5 text-sm text-destructive hover:bg-destructive/20 disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete event
+          </button>
         </div>
       </div>
 
@@ -91,17 +123,17 @@ export default function EventDetailPage() {
         <h1 className="mb-4 text-xl font-semibold">{event.title}</h1>
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           <dt className="text-muted-foreground">ID</dt>
-          <dd className="font-mono text-xs">{event._id}</dd>
+          <dd className="font-mono text-xs">{eventIdDisplay}</dd>
           <dt className="text-muted-foreground">Attendee</dt>
           <dd>{event.attendeeName ?? "—"}</dd>
           <dt className="text-muted-foreground">Start</dt>
           <dd>
-            {event.start
-              ? formatDateTime(event.start) + (event.timezone ? ` (${event.timezone})` : "")
+            {startIso
+              ? formatDateTime(startIso) + (event.timezone ? ` (${event.timezone})` : "")
               : "—"}
           </dd>
           <dt className="text-muted-foreground">End</dt>
-          <dd>{event.end ? formatDateTime(event.end) : "—"}</dd>
+          <dd>{endIso ? formatDateTime(endIso) : "—"}</dd>
           <dt className="text-muted-foreground">Google Event ID</dt>
           <dd className="font-mono text-xs">{event.googleEventId ?? "—"}</dd>
           <dt className="text-muted-foreground">Calendar ID</dt>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDateTime } from "@/lib/formatDate";
 import { Plus, Calendar, CalendarDays } from "lucide-react";
 import { apiSessions, apiEvents } from "@/lib/api/client";
@@ -16,6 +17,7 @@ import type { SessionCreateInput } from "@/lib/api/schemas";
 import type { EventCreateInput } from "@/lib/api/schemas";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [sessionModal, setSessionModal] = useState(false);
   const [eventModal, setEventModal] = useState(false);
@@ -40,9 +42,11 @@ export default function DashboardPage() {
   const eventCreate = useMutation({
     mutationFn: (body: EventCreateInput) =>
       apiEvents.create(body as Record<string, unknown>),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setEventModal(false);
+      const eventId = (result as { data?: { eventId?: string } })?.data?.eventId;
+      if (eventId) router.push(`/events/${eventId}`);
     },
   });
 
@@ -53,6 +57,8 @@ export default function DashboardPage() {
     : Array.isArray(sessionsPayload?.sessions)
       ? sessionsPayload.sessions
       : [];
+  console.log(sessionList);
+  console.log("sessionsPayload", sessionsPayload);
   // Events: backend returns { data: { events: [...], pagination } }
   const eventsPayload = eventsData?.data as { events?: Event[] } | Event[] | undefined;
   const eventList = Array.isArray(eventsPayload)
@@ -60,6 +66,7 @@ export default function DashboardPage() {
     : Array.isArray(eventsPayload?.events)
       ? eventsPayload.events
       : [];
+  console.log("eventsPayload", eventsPayload);
   const recentEvents = eventList.slice(0, 5);
 
   const eventColumns: Column<Event>[] = [
@@ -67,7 +74,7 @@ export default function DashboardPage() {
       key: "title",
       header: "Title",
       render: (r) => r.title,
-      link: (r) => `/events/${r._id}`,
+      link: (r) => `/api/proxy/events/${r._id}`,
     },
     { key: "attendee", header: "Attendee", render: (r) => r.attendeeName ?? "—" },
     {
@@ -124,7 +131,7 @@ export default function DashboardPage() {
         />
         {eventList.length > 0 && (
           <Link
-            href="/events"
+            href="/api/proxy/events"
             className="mt-2 inline-block text-sm text-primary hover:underline"
           >
             View all events
