@@ -60,14 +60,14 @@ export const apiAuth = {
     }),
 };
 
-// Sessions
+// Sessions (via Next proxy so JWT cookie is sent)
 export const apiSessions = {
   list: (params?: { page?: number; limit?: number }) => {
     const q = new URLSearchParams();
     if (params?.page != null) q.set("page", String(params.page));
     if (params?.limit != null) q.set("limit", String(params.limit));
     const query = q.toString();
-    return request<{ data?: unknown[]; success?: boolean }>(
+    return request<{ data?: { sessions?: unknown[]; pagination?: unknown }; success?: boolean }>(
       `/api/proxy/sessions${query ? `?${query}` : ""}`,
       { cache: "no-store" }
     );

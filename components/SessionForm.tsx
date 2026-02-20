@@ -2,7 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { sessionCreateSchema, type SessionCreateInput } from "@/lib/api/schemas";
+import {
+  sessionCreateFormSchema,
+  type SessionCreateFormInput,
+  type SessionCreateInput,
+} from "@/lib/api/schemas";
+import { localInZoneToISO, isoToLocalInZone } from "@/lib/dateTime";
+import { TIMEZONE_OPTIONS, DURATION_OPTIONS } from "@/lib/constants";
 import { useToast } from "@/lib/ui/toast";
 import { cn } from "@/lib/utils";
 
@@ -18,128 +24,155 @@ export function SessionForm({
   isLoading?: boolean;
 }) {
   const { addToast } = useToast();
+  const tz = defaultValues?.timezone ?? "Africa/Harare";
+  let proposedDateDefault = "";
+  let proposedTimeDefault = "09:00";
+  if (defaultValues?.proposedStartIso) {
+    try {
+      const p = isoToLocalInZone(defaultValues.proposedStartIso, tz);
+      proposedDateDefault = p.dateStr;
+      proposedTimeDefault = p.timeStr;
+    } catch {
+      // keep defaults
+    }
+  }
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SessionCreateInput>({
-    resolver: zodResolver(sessionCreateSchema),
+  } = useForm<SessionCreateFormInput>({
+    resolver: zodResolver(sessionCreateFormSchema),
     defaultValues: {
       channel: "web",
       timezone: "Africa/Harare",
       durationMinutes: 30,
+      proposedStartDate: proposedDateDefault,
+      proposedStartTime: proposedTimeDefault,
       ...defaultValues,
     },
   });
 
-  async function handle(data: SessionCreateInput) {
+  async function handle(data: SessionCreateFormInput) {
     try {
-      await onSubmit(data);
+      const proposedStartIso =
+        data.proposedStartDate && data.proposedStartTime
+          ? localInZoneToISO(data.proposedStartDate, data.proposedStartTime, data.timezone)
+          : undefined;
+      const payload: SessionCreateInput = {
+        channel: data.channel,
+        userName: data.userName,
+        email: data.email || undefined,
+        timezone: data.timezone,
+        durationMinutes: data.durationMinutes,
+        meetingTitle: data.meetingTitle || undefined,
+        proposedStartIso: proposedStartIso ?? "",
+      };
+      await onSubmit(payload);
       addToast("Session created", "success");
     } catch (e) {
       addToast(e instanceof Error ? e.message : "Failed to create session", "error");
     }
   }
 
+  const inputClass =
+    "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
+  const labelClass = "mb-1.5 block text-sm font-medium text-foreground";
+
   return (
-    <form onSubmit={handleSubmit(handle)} className="space-y-4">
+    <form onSubmit={handleSubmit(handle)} className="space-y-5">
       <div>
-        <label className="mb-1 block text-sm font-medium">Channel</label>
+        <label className={labelClass}>Channel</label>
         <select
           {...register("channel")}
-          className={cn(
-            "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            errors.channel && "border-destructive"
-          )}
+          className={cn(inputClass, errors.channel && "border-destructive")}
         >
-          <option value="web">web</option>
-          <option value="voice">voice</option>
-          <option value="api">api</option>
+          <option value="web">Web</option>
+          <option value="voice">Voice</option>
+          <option value="api">API</option>
         </select>
         {errors.channel && (
           <p className="mt-1 text-sm text-destructive">{errors.channel.message}</p>
         )}
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">User name *</label>
+        <label className={labelClass}>User name *</label>
         <input
           {...register("userName")}
-          className={cn(
-            "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            errors.userName && "border-destructive"
-          )}
+          placeholder="e.g. Alice Moyo"
+          className={cn(inputClass, errors.userName && "border-destructive")}
         />
         {errors.userName && (
           <p className="mt-1 text-sm text-destructive">{errors.userName.message}</p>
         )}
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Email</label>
+        <label className={labelClass}>Email</label>
         <input
           type="email"
           {...register("email")}
-          className={cn(
-            "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            errors.email && "border-destructive"
-          )}
+          placeholder="alice@example.com"
+          className={cn(inputClass, errors.email && "border-destructive")}
         />
         {errors.email && (
           <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
         )}
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Timezone</label>
-        <input
-          {...register("timezone")}
-          className={cn(
-            "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            errors.timezone && "border-destructive"
-          )}
-        />
-        {errors.timezone && (
-          <p className="mt-1 text-sm text-destructive">{errors.timezone.message}</p>
-        )}
+        <label className={labelClass}>Timezone</label>
+        <select {...register("timezone")} className={inputClass}>
+          {TIMEZONE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Duration (minutes)</label>
-        <input
-          type="number"
-          {...register("durationMinutes")}
-          className={cn(
-            "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            errors.durationMinutes && "border-destructive"
-          )}
-        />
+        <label className={labelClass}>Duration</label>
+        <select
+          {...register("durationMinutes", { valueAsNumber: true })}
+          className={cn(inputClass, errors.durationMinutes && "border-destructive")}
+        >
+          {DURATION_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
         {errors.durationMinutes && (
           <p className="mt-1 text-sm text-destructive">{errors.durationMinutes.message}</p>
         )}
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Meeting title</label>
+        <label className={labelClass}>Meeting title</label>
         <input
           {...register("meetingTitle")}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          placeholder="e.g. Product Strategy Sync"
+          className={inputClass}
         />
       </div>
-      <div>
-        <label className="mb-1 block text-sm font-medium">Proposed start (ISO)</label>
-        <input
-          {...register("proposedStartIso")}
-          placeholder="2027-02-20T10:00:00.000Z"
-          className={cn(
-            "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            errors.proposedStartIso && "border-destructive"
-          )}
-        />
-        {errors.proposedStartIso && (
-          <p className="mt-1 text-sm text-destructive">{errors.proposedStartIso.message}</p>
-        )}
+      <div className="rounded-lg border border-border bg-muted/30 p-3">
+        <p className="mb-3 text-sm font-medium text-foreground">Proposed start (optional)</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className={labelClass}>Date</label>
+            <input type="date" {...register("proposedStartDate")} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Time</label>
+            <input type="time" {...register("proposedStartTime")} className={inputClass} />
+          </div>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Converted to ISO using the timezone above.
+        </p>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 border-t border-border pt-4">
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50"
         >
           {isLoading ? "Creating…" : "Create session"}
         </button>
@@ -147,7 +180,7 @@ export function SessionForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+            className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted"
           >
             Cancel
           </button>

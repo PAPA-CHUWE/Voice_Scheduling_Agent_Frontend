@@ -41,7 +41,9 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const token = data?.token;
+  // Backend returns { success: true, data: { token, user } }
+  const payload = data?.data ?? data;
+  const token = payload?.token ?? data?.token;
   if (!token) {
     return NextResponse.json(
       { success: false, error: { message: "No token in response" } },
@@ -58,5 +60,5 @@ export async function POST(request: NextRequest) {
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
 
-  return NextResponse.json(data);
+  return NextResponse.json(payload);
 }

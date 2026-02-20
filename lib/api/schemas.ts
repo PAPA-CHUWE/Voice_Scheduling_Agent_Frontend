@@ -19,6 +19,12 @@ export const sessionCreateSchema = z.object({
   proposedStartIso: futureIsoDate.optional().or(z.literal("")),
 });
 
+/** Session form can use proposedStartDate + proposedStartTime; we build proposedStartIso in UI */
+export const sessionCreateFormSchema = sessionCreateSchema.omit({ proposedStartIso: true }).extend({
+  proposedStartDate: z.string().optional(),
+  proposedStartTime: z.string().optional(),
+});
+
 export const eventCreateSchema = z.object({
   sessionId: z.string().optional(),
   attendeeName: z.string().min(2, "Attendee name required (min 2 chars)"),
@@ -32,6 +38,18 @@ export const eventCreateSchema = z.object({
   remindersEnabled: z.boolean().default(true),
   reminderOffsetsMinutes: z.array(z.number()).default([60, 10]),
 });
+
+/** Form uses startDate + startTime; component builds startIso before submit */
+export const eventCreateFormSchema = eventCreateSchema
+  .omit({ startIso: true })
+  .extend({
+    startDate: z.string().min(1, "Start date is required"),
+    startTime: z.string().min(1, "Start time is required"),
+    reminderOffsetsMinutes: z.union([
+      z.array(z.number()),
+      z.string().transform((s) => s.split(",").map((n) => parseInt(n.trim(), 10)).filter(Boolean)),
+    ]).default([60, 10]),
+  });
 
 export const webhookToolFormSchema = z.object({
   toolName: z.string().default("create_calendar_event"),
@@ -52,5 +70,7 @@ export const webhookToolFormSchema = z.object({
 });
 
 export type SessionCreateInput = z.infer<typeof sessionCreateSchema>;
+export type SessionCreateFormInput = z.infer<typeof sessionCreateFormSchema>;
 export type EventCreateInput = z.infer<typeof eventCreateSchema>;
+export type EventCreateFormInput = z.infer<typeof eventCreateFormSchema>;
 export type WebhookToolFormInput = z.infer<typeof webhookToolFormSchema>;

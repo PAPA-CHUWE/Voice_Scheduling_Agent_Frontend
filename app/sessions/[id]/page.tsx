@@ -4,13 +4,11 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { formatDateTime, formatDateOnly } from "@/lib/formatDate";
+import { formatDateTime } from "@/lib/formatDate";
 import { ArrowLeft, Plus } from "lucide-react";
 import { apiSessions, apiEvents } from "@/lib/api/client";
-import { SessionForm } from "@/components/SessionForm";
 import { EventForm } from "@/components/EventForm";
 import type { Session as SessionType } from "@/lib/api/types";
-import type { SessionCreateInput } from "@/lib/api/schemas";
 import type { EventCreateInput } from "@/lib/api/schemas";
 
 export default function SessionDetailPage() {

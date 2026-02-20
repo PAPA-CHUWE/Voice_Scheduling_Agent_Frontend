@@ -12,8 +12,13 @@ export default function SessionsPage() {
     queryFn: () => apiSessions.list({ limit: 50 }),
   });
 
-  const raw = data?.data ?? data;
-  const rows = Array.isArray(raw) ? (raw as Session[]) : [];
+  // Backend returns { success, data: { sessions: [...], pagination } }
+  const raw = data?.data;
+  const rows = Array.isArray(raw)
+    ? (raw as Session[])
+    : Array.isArray((raw as { sessions?: Session[] })?.sessions)
+      ? ((raw as { sessions: Session[] }).sessions)
+      : [];
 
   const columns: Column<Session>[] = [
     { key: "status", header: "Status", render: (r) => r.status },

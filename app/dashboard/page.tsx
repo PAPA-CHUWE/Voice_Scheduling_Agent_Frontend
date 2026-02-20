@@ -46,10 +46,20 @@ export default function DashboardPage() {
     },
   });
 
-  const sessions = (sessionsData?.data ?? sessionsData) as Session[] | undefined;
-  const events = (eventsData?.data ?? eventsData) as Event[] | undefined;
-  const sessionList = Array.isArray(sessions) ? sessions : [];
-  const eventList = Array.isArray(events) ? events : [];
+  // Sessions: backend returns { data: { sessions: [...], pagination } }
+  const sessionsPayload = sessionsData?.data as { sessions?: Session[] } | Session[] | undefined;
+  const sessionList = Array.isArray(sessionsPayload)
+    ? sessionsPayload
+    : Array.isArray(sessionsPayload?.sessions)
+      ? sessionsPayload.sessions
+      : [];
+  // Events: backend returns { data: { events: [...], pagination } }
+  const eventsPayload = eventsData?.data as { events?: Event[] } | Event[] | undefined;
+  const eventList = Array.isArray(eventsPayload)
+    ? eventsPayload
+    : Array.isArray(eventsPayload?.events)
+      ? eventsPayload.events
+      : [];
   const recentEvents = eventList.slice(0, 5);
 
   const eventColumns: Column<Event>[] = [
