@@ -1,20 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is the **VSA (Voice Scheduling Agent) Web Console** – a Next.js frontend for the Voice Scheduling Agent backend API.
 
-## Getting Started
+## How to run
+
+```bash
+npm install
+cp .env.local.example .env.local   # edit if needed
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). You will be redirected to `/login` if not authenticated, or `/dashboard` if you are.
+
+## Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_BASE` | Backend API base URL (default: `https://voice-scheduling-gent.onrender.com/api/v1`). Used only by Next server proxy. |
+| `BACKEND_API_KEY` | Optional. If your backend requires `x-api-key`, set it here. **Server-side only** – never exposed to the client. |
+| `NEXT_PUBLIC_SHOW_WEBHOOK_TESTER` | Set to `true` to show the Webhook Tester in the sidebar (e.g. for dev). Set to `false` in production if desired. |
+
+## How to login
+
+1. Go to [http://localhost:3000/login](http://localhost:3000/login).
+2. Enter your **email** (no password). The backend finds or creates the user and returns a JWT.
+3. The app stores the JWT in an **httpOnly cookie** and redirects you to the Dashboard.
+
+## How to test flows
+
+- **Login → Dashboard → Create Session → Create Event → View Event → Open Calendar link**  
+  Use “Create session” or “Create event” from the Dashboard (or from Sessions / Events). On an event detail page, use “Open in Google Calendar” if the backend returned an `htmlLink`.
+
+- **Webhook tester**  
+  Go to **Webhook Tester** (if `NEXT_PUBLIC_SHOW_WEBHOOK_TESTER=true`). Fill the form to send a `create_calendar_event` tool call to `/webhooks/voice`. Use “Copy curl” to reproduce the request from the command line.
+
+## Scripts
+
+- `npm run dev` – start dev server
+- `npm run build` – production build
+- `npm run start` – run production server
+- `npm run typecheck` – run TypeScript check
+- `npm run lint` – run ESLint
+
+## Getting Started (dev)
 
 First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
