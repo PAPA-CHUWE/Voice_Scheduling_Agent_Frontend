@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useRealtimeVoice, type RealtimeVoiceState } from "./useRealtimeVoice";
 import { Mic } from "lucide-react";
 
-const NO_VOICE_PATHS = ["/", "/login"];
+const NO_VOICE_PATHS = ["/"];
 
 type VoiceContextValue = {
   isActive: boolean;

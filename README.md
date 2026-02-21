@@ -8,7 +8,7 @@ cp .env.local.example .env.local   # edit if needed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). You will be redirected to `/login` if not authenticated, or `/dashboard` if you are.
+Open [http://localhost:3000](http://localhost:3000). You will be redirected to the Dashboard.
 
 ## Environment variables
 
@@ -19,15 +19,9 @@ Open [http://localhost:3000](http://localhost:3000). You will be redirected to `
 | `NEXT_PUBLIC_SHOW_WEBHOOK_TESTER` | Set to `true` to show the Webhook Tester in the sidebar (e.g. for dev). Set to `false` in production if desired. |
 | `OPENAI_API_KEY` | Optional. OpenAI API key for smarter voice transcript parsing (name, date, time, title). **Server-side only** – used by `/api/voice/parse`. If not set, falls back to local regex parsing. |
 
-## How to login
-
-1. Go to [http://localhost:3000/login](http://localhost:3000/login).
-2. Enter your **email** (no password). The backend finds or creates the user and returns a JWT.
-3. The app stores the JWT in an **httpOnly cookie** and redirects you to the Dashboard.
-
 ## How to test flows
 
-- **Login → Dashboard → Create Session → Create Event → View Event → Open Calendar link**  
+- **Dashboard → Create Session → Create Event → View Event → Open Calendar link**  
   Use “Create session” or “Create event” from the Dashboard (or from Sessions / Events). On an event detail page, use “Open in Google Calendar” if the backend returned an `htmlLink`.
 
 - **Webhook tester**  

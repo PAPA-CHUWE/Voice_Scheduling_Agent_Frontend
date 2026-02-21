@@ -10,7 +10,7 @@ export function Navbar({ email }: { email: string | null }) {
 
   async function handleLogout() {
     await logout();
-    window.location.href = "/login";
+    window.location.href = "/dashboard";
   }
 
   return (

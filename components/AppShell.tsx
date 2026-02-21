@@ -6,7 +6,7 @@ import { getMe } from "@/lib/api/auth";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
 
-const NO_SHELL_PATHS = ["/", "/login"];
+const NO_SHELL_PATHS = ["/"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

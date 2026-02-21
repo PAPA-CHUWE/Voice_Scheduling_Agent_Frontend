@@ -80,16 +80,26 @@ const NAVIGATION_ROUTES: Record<string, string> = {
 
 const navigateTool = tool({
   name: "navigate",
-  description: "Navigate the user to a page. Call when user says 'go to dashboard', 'open sessions', 'show events', 'take me to events', etc.",
+  description:
+    "Navigate the user. Use when user says 'go to dashboard', 'open sessions', 'show events', or 'open session [id]', 'open event [id]'. Pass sessionId or eventId to open a specific session or event.",
   parameters: z.object({
     route: z.enum(["dashboard", "sessions", "events", "webhook-tester"]).describe("Target page"),
+    sessionId: z.string().optional().describe("Session ID to open detail page, e.g. when user says 'open session abc123'"),
+    eventId: z.string().optional().describe("Event ID to open detail page, e.g. when user says 'open event xyz456'"),
   }),
   async execute(input) {
-    const path = NAVIGATION_ROUTES[input.route] ?? `/${input.route}`;
+    let path: string;
+    if (input.sessionId) {
+      path = `/sessions/${input.sessionId}`;
+    } else if (input.eventId) {
+      path = `/events/${input.eventId}`;
+    } else {
+      path = NAVIGATION_ROUTES[input.route] ?? `/${input.route}`;
+    }
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("vsa-navigate", { detail: { path } }));
     }
-    return `Navigating to ${input.route}.`;
+    return `Navigating to ${input.sessionId ? "session" : input.eventId ? "event" : input.route}.`;
   },
 });
 
@@ -111,7 +121,7 @@ GUARDRAILS:
 - Never skip the confirmation step before calling create_calendar_event.
 - If they say "cancel" or "start over", begin again from step 1.
 - Parse natural language dates/times into ISO 8601 for start_iso.
-- For navigation: call navigate immediately when user says "go to dashboard", "open sessions", "show events", etc.`;
+- For navigation: call navigate immediately. Use sessionId when user provides a session ID; use eventId when user provides an event ID.`;
 
 /**
  * Creates the scheduling RealtimeAgent with instructions and tools.
