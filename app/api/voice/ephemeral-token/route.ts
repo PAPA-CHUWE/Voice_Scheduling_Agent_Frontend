@@ -7,13 +7,7 @@ import { NextResponse } from "next/server";
  * Returns { value: "ek_..." } for use with RealtimeSession.connect().
  */
 export async function POST() {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "OPENAI_API_KEY is not configured" },
-      { status: 500 }
-    );
-  }
+  const apiKey = process.env.OPENAI_API_KEY;
 
   const sessionConfig = {
     session: {
