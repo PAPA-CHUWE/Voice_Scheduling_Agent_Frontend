@@ -17,6 +17,7 @@ Open [http://localhost:3000](http://localhost:3000). You will be redirected to `
 | `NEXT_PUBLIC_API_BASE` | Backend API base URL (default: `https://voice-scheduling-gent.onrender.com/api/v1`). Used only by Next server proxy. |
 | `BACKEND_API_KEY` | Optional. If your backend requires `x-api-key`, set it here. **Server-side only** – never exposed to the client. |
 | `NEXT_PUBLIC_SHOW_WEBHOOK_TESTER` | Set to `true` to show the Webhook Tester in the sidebar (e.g. for dev). Set to `false` in production if desired. |
+| `OPENAI_API_KEY` | Optional. OpenAI API key for smarter voice transcript parsing (name, date, time, title). **Server-side only** – used by `/api/voice/parse`. If not set, falls back to local regex parsing. |
 
 ## How to login
 

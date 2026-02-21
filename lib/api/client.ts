@@ -154,3 +154,16 @@ export const apiWebhook = {
       body,
     }),
 };
+
+// Voice parse (OpenAI-enhanced; falls back to client parsing if no key)
+export const apiVoice = {
+  parse: (body: {
+    transcript: string;
+    step: string;
+    context?: { attendeeName?: string; startIso?: string };
+  }) =>
+    request<{ name?: string; startIso?: string; title?: string; useFallback?: boolean }>(
+      "/api/voice/parse",
+      { method: "POST", body }
+    ),
+};
